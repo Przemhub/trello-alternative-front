@@ -1,4 +1,4 @@
-import 'package:flutter_web/material.dart';
+import 'package:flutter/material.dart';
 
 class Loading extends StatefulWidget {
   @override
@@ -8,8 +8,6 @@ class Loading extends StatefulWidget {
 class _LoadingState extends State<Loading> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-
-    );
+    return MaterialApp();
   }
 }

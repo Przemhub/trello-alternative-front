@@ -1,5 +1,5 @@
 name: trello_app
-description: A new Flutter application.
+description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
@@ -21,20 +21,19 @@ environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
-  flutter_web_ui: any
-  flutter_web: any
+  flutter:
+    sdk: flutter
+  http: ^0.12.2
+  flutter_secure_storage: ^3.3.1+1
 
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.0
+  cupertino_icons: ^1.0.1
 
 dev_dependencies:
-  build_runner: any
-  build_web_compilers: any
-  flutter_web_test: any
-  test: ^1.0.0
-
+  flutter_test:
+    sdk: flutter
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -77,17 +76,3 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
-
-dependency_overrides:
-  flutter_web:
-    git:
-      url: https://github.com/flutter/flutter_web
-      path: packages/flutter_web
-  flutter_web_ui:
-    git:
-      url: https://github.com/flutter/flutter_web
-      path: packages/flutter_web_ui
-  flutter_web_test:
-    git:
-      url: https://github.com/flutter/flutter_web
-      path: packages/flutter_web_test

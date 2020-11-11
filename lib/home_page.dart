@@ -1,5 +1,5 @@
-import 'package:flutter_web/cupertino.dart';
-import 'package:flutter_web/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -12,7 +12,7 @@ class _HomePageState extends State<HomePage> {
     ["ToDo 1", "ToDo 2"],
     ["Done 1", "Done 2"],
   ];
-  void getData() async{
+  void getData() async {
     // Response response = await get('endpoint adress');
     // Map data = jsonDecode(response.body);
   }
@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage> {
                   child: Text(
                     "Add List",
                     style:
-                    TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
                   ),
                 ),
                 Padding(
@@ -98,7 +98,7 @@ class _HomePageState extends State<HomePage> {
                   child: Text(
                     "Add Card",
                     style:
-                    TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
                   ),
                 ),
                 Padding(
@@ -150,17 +150,21 @@ class _HomePageState extends State<HomePage> {
               return _buildAddListWidget(context);
             else
               return LongPressDraggable<dynamic>(
-                data: {"from": index,"string":listNames[index],"child":cardNames[index]},
+                data: {
+                  "from": index,
+                  "string": listNames[index],
+                  "child": cardNames[index]
+                },
                 child: _buildList(context, index),
                 feedback: Opacity(
-                  child:  _buildList(context, index),
+                  child: _buildList(context, index),
                   opacity: 0.6,
                 ),
                 childWhenDragging: Container(),
               );
           },
         ),
-        for(int index = 0;index<listNames.length;index++)
+        for (int index = 0; index < listNames.length; index++)
           Positioned.fill(
             child: DragTarget<dynamic>(
               onWillAccept: (data) {
@@ -169,13 +173,13 @@ class _HomePageState extends State<HomePage> {
               },
               onLeave: (data) {},
               onAccept: (data) {
-                if(data['from'] == null){
+                if (data['from'] == null) {
                   print("index $index data $data['from']");
                   cardNames[data['from2']].remove(data['string2']);
                   cardNames[index].add(data['string2']);
-                }else if (data['from'] == index) {
+                } else if (data['from'] == index) {
                   return;
-                }else {
+                } else {
                   print("else");
                   index = data['from'] + 1;
                   listNames.remove(data['string']);
@@ -299,22 +303,20 @@ class _HomePageState extends State<HomePage> {
                   child: Container(
                     height: MediaQuery.of(context).size.height * 0.7,
                     child: ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      itemCount: cardNames[index].length + 1,
-                      itemBuilder: (context, index2) {
-                        if (index2 == cardNames[index].length)
-                          return _buildAddCardWidget(context,index);
-                        else{
-                          return _buildCard(index,index2);
-                        }
-                        }
-                    ),
+                        scrollDirection: Axis.vertical,
+                        itemCount: cardNames[index].length + 1,
+                        itemBuilder: (context, index2) {
+                          if (index2 == cardNames[index].length)
+                            return _buildAddCardWidget(context, index);
+                          else {
+                            return _buildCard(index, index2);
+                          }
+                        }),
                   ),
                 ),
               ],
             ),
           ),
-
         ],
       ),
     );
