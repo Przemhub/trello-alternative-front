@@ -1,9 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:trello_app/table.dart';
+import 'package:trello_app/user.dart';
 
 class HomePage extends StatefulWidget {
-  @override
+  TrelloTable table;
+  @override 
   _HomePageState createState() => _HomePageState();
+  // HomePage({Key key, @required this.table}) : super(key: key);
 }
 
 class _HomePageState extends State<HomePage> {
@@ -157,7 +161,7 @@ class _HomePageState extends State<HomePage> {
                 },
                 child: _buildList(context, index),
                 feedback: Opacity(
-                  child: _buildList(context, index),
+                  child: _buildListDraggable(context, index),
                   opacity: 0.6,
                 ),
                 childWhenDragging: Container(),
@@ -322,11 +326,62 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildListDraggable(BuildContext context, int index) {
+    return Container(
+      child: Stack(
+        children: <Widget>[
+          Container(
+            width: 300.0,
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                    blurRadius: 8,
+                    offset: Offset(0, 0),
+                    color: Color.fromRGBO(127, 140, 141, 0.5),
+                    spreadRadius: 1)
+              ],
+              borderRadius: BorderRadius.circular(10.0),
+              color: Colors.white,
+            ),
+            margin: const EdgeInsets.all(16.0),
+            height: MediaQuery.of(context).size.height * 0.8,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    listNames[index],
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                SingleChildScrollView(
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        itemCount: cardNames[index].length,
+                        itemBuilder: (context, index2) {
+                          return _buildCard(index, index2);
+                        }),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Container _buildCard(int index, int innerIndex) {
     return Container(
       width: 300.0,
       margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-      child: LongPressDraggable<dynamic>(
+      child: Draggable<dynamic>(
         feedback: Material(
           elevation: 5.0,
           child: Container(

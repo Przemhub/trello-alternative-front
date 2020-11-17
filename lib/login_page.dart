@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:trello_app/home_page.dart';
+import 'package:trello_app/tables_page.dart';
+import 'package:trello_app/user.dart';
 
 class SignInScreen extends StatelessWidget {
   @override
@@ -26,6 +28,8 @@ class SignInForm extends StatefulWidget {
   @override
   _SignInFormState createState() => _SignInFormState();
 }
+
+User user = new User();
 
 class _SignInFormState extends State<SignInForm> {
   final _emailTextController = TextEditingController();
@@ -52,10 +56,6 @@ class _SignInFormState extends State<SignInForm> {
     });
   }
 
-  void _showWelcomeScreen() {
-    Navigator.of(context).pushNamed('/welcome');
-  }
-
   signIn() async {
     // SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 
@@ -64,13 +64,18 @@ class _SignInFormState extends State<SignInForm> {
     var jwt = await attemptLogIn(userEmail, password);
     print("Attempted to log in");
     if (jwt != null) {
-      print(jwt);
-
+      // print(jwt);
+      user.email = userEmail;
+      user.password = password;
       int response = await getTablesByUser(jwt);
-      // if (response == 200) {
-      //   Navigator.push(
-      //       context, MaterialPageRoute(builder: (context) => HomePage()));
-      // }
+      if (response == 200) {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => Tables(
+                      user: user,
+                    )));
+      }
     } else {
       displayDialog(context, "An Error Occurred",
           "No account was found matching that Email and password");
@@ -87,15 +92,21 @@ class _SignInFormState extends State<SignInForm> {
     } else {
       var jsonResponse = json.decode(res.body);
       print(jsonResponse);
-      // var jsonPointEncoded = json.encode(jsonResponse["point"]);
-      // var jsonPoint = json.decode(jsonPointEncoded);
-      // if (jsonPoint != null) {
-      //   storage.write(key: "X-Auth-Token", value: jsonPoint["name"]);
-      //   storage.write(key: "pointID", value: jsonResponse["id"].toString());
-      // }
-      // print(jsonPoint["name"]);
-      // print(jsonPointEncoded);
-      // print(res.body);
+      for (var table in jsonResponse["boards"]) {
+        //table["team"] == null means table is private
+        if (table["team"] != null) {
+          int index = user.teams.indexOf(table["team"]);
+          //if team exists, insert table to a specific nested list, else add new team
+          if (index != -1) {
+            user.tables[index].add(table["name"]);
+          } else {
+            user.teams.add(table["team"]);
+            user.tables.add([table["name"]]);
+          }
+        } else {
+          user.tables[0].add(table["name"]);
+        }
+      }
     }
     return res.statusCode;
   }
@@ -158,7 +169,9 @@ class _SignInFormState extends State<SignInForm> {
                     : Colors.blue;
               }),
             ),
-            onPressed: () => {signIn()},
+            onPressed: () {
+              signIn();
+            },
             child: Text('Sign in'),
           ),
         ],
