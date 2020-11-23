@@ -1,4 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:trello_app/tables_page.dart';
+import 'package:trello_app/user.dart';
+import 'package:http/http.dart' as http;
+
+import 'login_page.dart';
 
 class SignUpScreen extends StatelessWidget {
   @override
@@ -21,6 +28,8 @@ class SignUpForm extends StatefulWidget {
   @override
   _SignUpFormState createState() => _SignUpFormState();
 }
+
+User user = new User();
 
 class _SignUpFormState extends State<SignUpForm> {
   final _firstNameTextController = TextEditingController();
@@ -50,8 +59,45 @@ class _SignUpFormState extends State<SignUpForm> {
     });
   }
 
-  void _showWelcomeScreen() {
-    Navigator.of(context).pushNamed('/welcome');
+  static const SERVER_IP = 'https://trello-alternative.herokuapp.com';
+  signUp() async {
+    String name = _firstNameTextController.text;
+    String surname = _lastNameTextController.text;
+    String userEmail = _emailTextController.text;
+    String password = _passwordTextController.text;
+    String fullname = name + " " + surname;
+    String token = await attemptRegister(userEmail, password, fullname);
+
+    if (token != null) {
+      print("User registered");
+      print("User token: $token");
+      print(userEmail);
+      print(password);
+      user.token = token;
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => Tables(
+                    user: user,
+                  )));
+    }
+  }
+
+  Future<String> attemptRegister(
+      String email, String password, String fullname) async {
+    print('serverip:$SERVER_IP');
+    print('password:$password');
+    print('email:$email');
+
+    var res = await http.post("$SERVER_IP/api/user/register",
+        body: jsonEncode(<String, String>{
+          "email": email,
+          "password": password,
+          "name": fullname
+        }),
+        headers: <String, String>{"Content-Type": "application/json"});
+    if (res.statusCode == 200) return res.body;
+    return null;
   }
 
   @override
@@ -92,23 +138,54 @@ class _SignUpFormState extends State<SignUpForm> {
               obscureText: true,
             ),
           ),
-          TextButton(
-            style: ButtonStyle(
-              foregroundColor:
-                  MaterialStateColor.resolveWith((Set<MaterialState> states) {
-                return states.contains(MaterialState.disabled)
-                    ? null
-                    : Colors.white;
-              }),
-              backgroundColor:
-                  MaterialStateColor.resolveWith((Set<MaterialState> states) {
-                return states.contains(MaterialState.disabled)
-                    ? null
-                    : Colors.blue;
-              }),
-            ),
-            onPressed: () => {},
-            child: Text('Sign up'),
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(150.0, 0.0, 0.0, 0.0),
+                child: TextButton(
+                  style: ButtonStyle(
+                    foregroundColor: MaterialStateColor.resolveWith(
+                        (Set<MaterialState> states) {
+                      return states.contains(MaterialState.disabled)
+                          ? null
+                          : Colors.white;
+                    }),
+                    backgroundColor: MaterialStateColor.resolveWith(
+                        (Set<MaterialState> states) {
+                      return states.contains(MaterialState.disabled)
+                          ? null
+                          : Colors.blue;
+                    }),
+                  ),
+                  onPressed: () => {signUp()},
+                  child: Text('Sign up'),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(70.0, 0.0, 0.0, 0.0),
+                child: TextButton(
+                  style: ButtonStyle(
+                    foregroundColor: MaterialStateColor.resolveWith(
+                        (Set<MaterialState> states) {
+                      return states.contains(MaterialState.disabled)
+                          ? null
+                          : Colors.blue;
+                    }),
+                    backgroundColor: MaterialStateColor.resolveWith(
+                        (Set<MaterialState> states) {
+                      return states.contains(MaterialState.disabled)
+                          ? null
+                          : Colors.white;
+                    }),
+                  ),
+                  onPressed: () => {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => SignInScreen()))
+                  },
+                  child: Text('Go to Sign in'),
+                ),
+              )
+            ],
           ),
         ],
       ),

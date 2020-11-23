@@ -1,9 +1,9 @@
 import 'dart:convert';
+import 'dart:html';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:trello_app/home_page.dart';
+import 'package:trello_app/register_page.dart';
 import 'package:trello_app/tables_page.dart';
 import 'package:trello_app/user.dart';
 
@@ -39,8 +39,6 @@ class _SignInFormState extends State<SignInForm> {
 
   static const SERVER_IP = 'https://trello-alternative.herokuapp.com';
 
-  final storage = FlutterSecureStorage();
-
   void _updateFormProgress() {
     var progress = 0.0;
     var controllers = [_passwordTextController, _emailTextController];
@@ -61,13 +59,12 @@ class _SignInFormState extends State<SignInForm> {
 
     var userEmail = _emailTextController.text;
     var password = _passwordTextController.text;
-    var jwt = await attemptLogIn(userEmail, password);
-    print("Attempted to log in");
-    if (jwt != null) {
-      // print(jwt);
-      user.email = userEmail;
-      user.password = password;
-      int response = await getTablesByUser(jwt);
+    var token = await attemptLogIn(userEmail, password);
+    print("User logged in succesfully");
+    if (token != null) {
+      print("user token: $token");
+      user.token = token;
+      int response = await getTablesByUser(token);
       if (response == 200) {
         Navigator.push(
             context,
@@ -84,7 +81,7 @@ class _SignInFormState extends State<SignInForm> {
 
   Future<int> getTablesByUser(String userId) async {
     var res = await http.get("$SERVER_IP/boards/",
-        headers: {HttpHeaders.authorizationHeader: userId});
+        headers: {HttpHeaders.authorizationHeader: "Bearer " + userId});
 
     if (res.statusCode != 200) {
       displayDialog(context, "An Error Occurred",
@@ -112,9 +109,10 @@ class _SignInFormState extends State<SignInForm> {
   }
 
   Future<String> attemptLogIn(String email, String password) async {
+    print('serverip:$SERVER_IP');
     print('password:$password');
     print('email:$email');
-    // print('serverip:$SERVER_IP');
+
     var res = await http.post("$SERVER_IP/api/user/login",
         body:
             jsonEncode(<String, String>{"email": email, "password": password}),
@@ -154,25 +152,58 @@ class _SignInFormState extends State<SignInForm> {
               obscureText: true,
             ),
           ),
-          TextButton(
-            style: ButtonStyle(
-              foregroundColor:
-                  MaterialStateColor.resolveWith((Set<MaterialState> states) {
-                return states.contains(MaterialState.disabled)
-                    ? null
-                    : Colors.white;
-              }),
-              backgroundColor:
-                  MaterialStateColor.resolveWith((Set<MaterialState> states) {
-                return states.contains(MaterialState.disabled)
-                    ? null
-                    : Colors.blue;
-              }),
-            ),
-            onPressed: () {
-              signIn();
-            },
-            child: Text('Sign in'),
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(150.0, 0.0, 0.0, 0.0),
+                child: TextButton(
+                  style: ButtonStyle(
+                    foregroundColor: MaterialStateColor.resolveWith(
+                        (Set<MaterialState> states) {
+                      return states.contains(MaterialState.disabled)
+                          ? null
+                          : Colors.white;
+                    }),
+                    backgroundColor: MaterialStateColor.resolveWith(
+                        (Set<MaterialState> states) {
+                      return states.contains(MaterialState.disabled)
+                          ? null
+                          : Colors.blue;
+                    }),
+                  ),
+                  onPressed: () {
+                    signIn();
+                  },
+                  child: Text('Sign in'),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(70.0, 0.0, 0.0, 0.0),
+                child: TextButton(
+                  style: ButtonStyle(
+                    foregroundColor: MaterialStateColor.resolveWith(
+                        (Set<MaterialState> states) {
+                      return states.contains(MaterialState.disabled)
+                          ? null
+                          : Colors.blue;
+                    }),
+                    backgroundColor: MaterialStateColor.resolveWith(
+                        (Set<MaterialState> states) {
+                      return states.contains(MaterialState.disabled)
+                          ? null
+                          : Colors.white;
+                    }),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SignUpScreen()));
+                  },
+                  child: Text('Go to Sign up'),
+                ),
+              )
+            ],
           ),
         ],
       ),

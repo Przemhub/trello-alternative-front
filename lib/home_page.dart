@@ -5,7 +5,7 @@ import 'package:trello_app/user.dart';
 
 class HomePage extends StatefulWidget {
   TrelloTable table;
-  @override 
+  @override
   _HomePageState createState() => _HomePageState();
   // HomePage({Key key, @required this.table}) : super(key: key);
 }
@@ -59,7 +59,7 @@ class _HomePageState extends State<HomePage> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
-                    decoration: InputDecoration(hintText: "Card Title"),
+                    decoration: InputDecoration(hintText: "List Title"),
                     controller: _cardTextController,
                   ),
                 ),
@@ -172,7 +172,6 @@ class _HomePageState extends State<HomePage> {
           Positioned.fill(
             child: DragTarget<dynamic>(
               onWillAccept: (data) {
-                print(data);
                 return true;
               },
               onLeave: (data) {},
@@ -240,7 +239,7 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(
                   width: 16.0,
                 ),
-                Text("Add Card"),
+                Text("Add List"),
               ],
             ),
           ),
