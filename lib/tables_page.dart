@@ -26,13 +26,6 @@ class _TablesState extends State<Tables> {
     teamList = widget.user.teams;
   }
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    initLists();
-  }
-
   static const SERVER_IP = 'https://trello-alternative.herokuapp.com';
 
   Future<String> postTable(String userId, String name, String team) async {
@@ -53,6 +46,7 @@ class _TablesState extends State<Tables> {
   }
 
   TextEditingController _tableTextController = TextEditingController();
+  TextEditingController _editTableTextController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,11 +56,7 @@ class _TablesState extends State<Tables> {
             child: IconButton(
               onPressed: () {
                 widget.user.clear();
-                // AlertDialog(
-                //   title: Text("My title"),
-                //   content: Text("This is my message."),
-                //   actions: [],
-                // );
+                //implement alert dialog or smth
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => SignInScreen()));
               },
@@ -75,6 +65,12 @@ class _TablesState extends State<Tables> {
       ]),
       body: _buildBody(),
     );
+  }
+
+  _editTable(int tableIndex, int teamIndex, String tableName) {
+    tableList[teamIndex][tableIndex] = tableName;
+    // user.tables[teamIndex][tableIndex] = tableName;
+    setState(() {});
   }
 
   _buildBody() {
@@ -103,7 +99,7 @@ class _TablesState extends State<Tables> {
     );
   }
 
-  Widget _buildTable(BuildContext context, String tableName) {
+  Widget _buildTable(BuildContext context, String tableName, int teamIndex) {
     return Container(
       margin: EdgeInsets.all(20.0),
       width: 150,
@@ -119,40 +115,67 @@ class _TablesState extends State<Tables> {
       ),
       child: Column(
         children: [
-          SizedBox(
-            child: Text(
-              tableName,
-              style: TextStyle(
-                fontSize: 15.0,
-                fontWeight: FontWeight.bold,
-              ),
+          Text(
+            tableName,
+            style: TextStyle(
+              fontSize: 15.0,
+              fontWeight: FontWeight.bold,
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(60.0, 25.0, 0.0, 0.0),
-            child: InkWell(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => HomePage()));
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.0),
-                  boxShadow: [
-                    BoxShadow(
-                        blurRadius: 4,
-                        offset: Offset(0, 0),
-                        color: Color.fromRGBO(127, 140, 141, 0.5),
-                        spreadRadius: 3)
-                  ],
-                  color: Colors.white,
+            padding: const EdgeInsets.fromLTRB(70.0, 25.0, 0.0, 0.0),
+            child: Row(
+              children: [
+                InkWell(
+                  onTap: () {
+                    _showEditTable(
+                        tableList[teamIndex].indexOf(tableName), teamIndex);
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.0),
+                      boxShadow: [
+                        BoxShadow(
+                            blurRadius: 4,
+                            offset: Offset(0, 0),
+                            color: Color.fromRGBO(127, 140, 141, 0.5),
+                            spreadRadius: 3)
+                      ],
+                      color: Colors.white,
+                    ),
+                    child: Icon(
+                      Icons.edit_outlined,
+                    ),
+                  ),
                 ),
-                child: Icon(
-                  Icons.arrow_circle_down,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => HomePage()));
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10.0),
+                        boxShadow: [
+                          BoxShadow(
+                              blurRadius: 4,
+                              offset: Offset(0, 0),
+                              color: Color.fromRGBO(127, 140, 141, 0.5),
+                              spreadRadius: 3)
+                        ],
+                        color: Colors.white,
+                      ),
+                      child: Icon(
+                        Icons.arrow_downward,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -164,7 +187,7 @@ class _TablesState extends State<Tables> {
       itemCount: tableList[teamIndex].length + 1,
       itemBuilder: (context, index) {
         if (index < tableList[teamIndex].length) {
-          return _buildTable(context, tableList[teamIndex][index]);
+          return _buildTable(context, tableList[teamIndex][index], teamIndex);
         } else {
           return _buildTableAddWidget(context, teamIndex);
         }
@@ -177,6 +200,49 @@ class _TablesState extends State<Tables> {
     user.tables[index].add(name);
     postTable(user.token, name, teamList[index]);
     setState(() {});
+  }
+
+  _showEditTable(int tableIndex, int teamIndex) {
+    showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) {
+          return Dialog(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Edit Table",
+                    style:
+                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    decoration: InputDecoration(hintText: "Table Name"),
+                    controller: _editTableTextController,
+                  ),
+                ),
+                SizedBox(
+                  height: 30.0,
+                ),
+                Center(
+                  child: RaisedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      _editTable(tableIndex, teamIndex,
+                          _editTableTextController.text.trim());
+                    },
+                    child: Text("Edit Table"),
+                  ),
+                )
+              ],
+            ),
+          );
+        });
   }
 
   _showAddTable(int teamIndex) {

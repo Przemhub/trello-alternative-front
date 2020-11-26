@@ -38,6 +38,53 @@ class _HomePageState extends State<HomePage> {
 
   TextEditingController _cardTextController = TextEditingController();
   TextEditingController _taskTextController = TextEditingController();
+  TextEditingController _editListTextController = TextEditingController();
+  _editList(int listIndex, String listName) {
+    listNames[listIndex] = listName;
+    setState(() {});
+  }
+
+  _showEditList(int listIndex) {
+    showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) {
+          return Dialog(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Edit List",
+                    style:
+                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    decoration: InputDecoration(hintText: "List Name"),
+                    controller: _editListTextController,
+                  ),
+                ),
+                SizedBox(
+                  height: 30.0,
+                ),
+                Center(
+                  child: RaisedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      _editList(listIndex, _editListTextController.text.trim());
+                    },
+                    child: Text("Edit List"),
+                  ),
+                )
+              ],
+            ),
+          );
+        });
+  }
 
   _showAddList() {
     showDialog(
@@ -168,43 +215,6 @@ class _HomePageState extends State<HomePage> {
               );
           },
         ),
-        for (int index = 0; index < listNames.length; index++)
-          Positioned.fill(
-            child: DragTarget<dynamic>(
-              onWillAccept: (data) {
-                return true;
-              },
-              onLeave: (data) {},
-              onAccept: (data) {
-                if (data['from'] == null) {
-                  print("index $index data $data['from']");
-                  cardNames[data['from2']].remove(data['string2']);
-                  cardNames[index].add(data['string2']);
-                } else if (data['from'] == index) {
-                  return;
-                } else {
-                  print("else");
-                  index = data['from'] + 1;
-                  listNames.remove(data['string']);
-                  cardNames.removeAt(data['from']);
-                  if (index < listNames.length) {
-                    listNames.insert(index, data['string']);
-                    cardNames.insert(index, data['child']);
-                  } else {
-                    listNames.add(data['string']);
-                    cardNames.add(data['child']);
-                  }
-                }
-                print(data);
-                setState(() {});
-              },
-              builder: (context, accept, reject) {
-                print("--- > $accept");
-                print(reject);
-                return Container();
-              },
-            ),
-          ),
       ],
     );
   }
@@ -294,12 +304,27 @@ class _HomePageState extends State<HomePage> {
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    listNames[index],
-                    style: TextStyle(
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Row(
+                    children: [
+                      Text(
+                        listNames[index],
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
+                        child: InkWell(
+                          onTap: () {
+                            _showEditList(index);
+                          },
+                          child: Icon(
+                            Icons.edit_outlined,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 SingleChildScrollView(
@@ -318,6 +343,43 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ],
+            ),
+          ),
+          Positioned.fill(
+            child: DragTarget<dynamic>(
+              onWillAccept: (data) {
+                print(data);
+                return true;
+              },
+              onLeave: (data) {},
+              onAccept: (data) {
+                if (data['from'] == null) {
+                  print("index $index data $data");
+                  cardNames[data['from2']].remove(data['string2']);
+                  cardNames[index].add(data['string2']);
+                } else if (data['from'] == index) {
+                  return;
+                } else {
+                  print("else");
+
+                  listNames.remove(data['string']);
+                  cardNames.removeAt(data['from']);
+                  if (index < listNames.length) {
+                    listNames.insert(index, data['string']);
+                    cardNames.insert(index, data['child']);
+                  } else {
+                    listNames.add(data['string']);
+                    cardNames.add(data['child']);
+                  }
+                }
+                print(data);
+                setState(() {});
+              },
+              builder: (context, accept, reject) {
+                print("--- > $accept");
+                print(reject);
+                return Container();
+              },
             ),
           ),
         ],
@@ -401,3 +463,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+class _editListTextController {}
