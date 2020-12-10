@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:trello_app/register_page.dart';
 import 'package:trello_app/tables_page.dart';
 import 'package:trello_app/user.dart';
+import 'package:trello_app/home_page.dart';
 
 class SignInScreen extends StatelessWidget {
   @override
@@ -68,7 +69,7 @@ class _SignInFormState extends State<SignInForm> {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => Tables(
+                builder: (context) => TablesPage(
                       user: user,
                     )));
       }
@@ -95,12 +96,15 @@ class _SignInFormState extends State<SignInForm> {
           //if team exists, insert table to a specific nested list, else add new team
           if (index != -1) {
             user.tables[index].add(table["name"]);
+            user.tableToID[table["name"]] = table["id"];
           } else {
             user.teams.add(table["team"]);
             user.tables.add([table["name"]]);
+            user.tableToID[table["name"]] = table["id"];
           }
         } else {
           user.tables[0].add(table["name"]);
+          user.tableToID[table["name"]] = table["id"];
         }
       }
     }

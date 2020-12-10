@@ -1,9 +1,8 @@
+import 'dart:isolate';
+
 import 'package:flutter/material.dart';
 import 'package:trello_app/home_page.dart';
 import 'package:trello_app/login_page.dart';
-import 'package:trello_app/register_page.dart';
-import 'package:trello_app/tables_page.dart';
-import 'package:trello_app/user.dart';
 
 void main() => runApp(MyApp());
 
@@ -17,8 +16,6 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
         ),
         debugShowCheckedModeBanner: false,
-        home: Tables(
-          user: null,
-        ));
+        home: SignInScreen());
   }
 }

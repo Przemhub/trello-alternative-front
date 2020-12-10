@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:trello_app/tables_page.dart';
 import 'package:trello_app/user.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:trello_app/home_page.dart';
 import 'login_page.dart';
+import 'package:trello_app/tables_page.dart';
 
 class SignUpScreen extends StatelessWidget {
   @override
@@ -77,7 +77,7 @@ class _SignUpFormState extends State<SignUpForm> {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => Tables(
+              builder: (context) => TablesPage(
                     user: user,
                   )));
     }

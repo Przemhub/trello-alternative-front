@@ -9,14 +9,18 @@ import 'package:trello_app/table.dart';
 import 'package:trello_app/user.dart';
 import 'package:http/http.dart' as http;
 
-class Tables extends StatefulWidget {
+import 'card.dart';
+import 'list.dart';
+
+class TablesPage extends StatefulWidget {
   @override
-  _TablesState createState() => _TablesState();
+  _TablesPageState createState() => _TablesPageState();
   User user;
-  Tables({Key key, @required this.user}) : super(key: key);
+  TablesPage({Key key, @required this.user}) : super(key: key);
 }
 
-class _TablesState extends State<Tables> {
+class _TablesPageState extends State<TablesPage> {
+  TrelloTable table;
   List<List<String>> tableList = [
     ["random Table"]
   ];
@@ -26,7 +30,60 @@ class _TablesState extends State<Tables> {
     teamList = widget.user.teams;
   }
 
+  @override
+  void initState() {
+    initLists();
+    super.initState();
+  }
+
   static const SERVER_IP = 'https://trello-alternative.herokuapp.com';
+  // Future<String> getTableID() async {
+  //   var res = await http.get("$SERVER_IP/");
+  // }
+
+  getListsByTable(String boardID) async {
+    print(boardID);
+    print("$SERVER_IP/board/" + boardID);
+    var res = await http.get("$SERVER_IP/board/" + boardID, headers: {
+      HttpHeaders.authorizationHeader: "Bearer " + widget.user.token
+    });
+    print(res.body);
+    if (res.statusCode != 200) {
+      print("Error");
+    } else {
+      var jsonResponse = json.decode(res.body);
+
+      // print("response $jsonResponse");
+      for (var list in jsonResponse["board"]["lists"]) {
+        print("list $list");
+        TrelloList tempList = new TrelloList(list["name"]);
+        tempList.id = list["_id"];
+        table.lists.add(tempList);
+        for (var card in list["cards"]) {
+          TrelloCard tempCard = new TrelloCard(card["name"]);
+          tempCard.id = card["id"];
+          table.lists[table.lists.indexOf(tempList)].cards.add(tempCard);
+        }
+
+        // lists["team"] == null means table is private
+
+      }
+    }
+  }
+
+  renameTable(String boardID, String name) async {
+    var res = await http.patch("$SERVER_IP/board/rename", headers: {
+      HttpHeaders.authorizationHeader: "Bearer " + widget.user.token
+    }, body: {
+      "board": boardID,
+      "name": name
+    });
+    print(res.statusCode);
+    print(res.body);
+    if (res.statusCode != 200) {
+      print("Error");
+    }
+  }
 
   Future<String> postTable(String userId, String name, String team) async {
     var res = await http.post(
@@ -39,6 +96,7 @@ class _TablesState extends State<Tables> {
         'background': 'blue'
       },
     );
+    user.tableToID[name] = res.body;
     print(name);
     print(res.body);
     if (res.statusCode == 200) return res.body;
@@ -152,8 +210,13 @@ class _TablesState extends State<Tables> {
                   padding: const EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
                   child: InkWell(
                     onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => HomePage()));
+                      table = new TrelloTable(
+                          tableName, widget.user.tableToID[tableName]);
+                      getListsByTable(widget.user.tableToID[tableName]);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => HomePage(table, user)));
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -232,8 +295,11 @@ class _TablesState extends State<Tables> {
                 Center(
                   child: RaisedButton(
                     onPressed: () {
+                      String oldName = tableList[teamIndex][tableIndex];
                       Navigator.of(context).pop();
                       _editTable(tableIndex, teamIndex,
+                          _editTableTextController.text.trim());
+                      renameTable(user.tableToID[oldName],
                           _editTableTextController.text.trim());
                     },
                     child: Text("Edit Table"),
