@@ -108,19 +108,19 @@ class _SignUpFormState extends State<SignUpForm> {
         mainAxisSize: MainAxisSize.min,
         children: [
           AnimatedProgressIndicator(value: _formProgress),
-          Text('Sign up', style: Theme.of(context).textTheme.headline4),
+          Text('Rejestracja', style: Theme.of(context).textTheme.headline4),
           Padding(
             padding: EdgeInsets.all(8.0),
             child: TextFormField(
               controller: _firstNameTextController,
-              decoration: InputDecoration(hintText: 'First name'),
+              decoration: InputDecoration(hintText: 'Imię'),
             ),
           ),
           Padding(
             padding: EdgeInsets.all(8.0),
             child: TextFormField(
               controller: _lastNameTextController,
-              decoration: InputDecoration(hintText: 'Last name'),
+              decoration: InputDecoration(hintText: 'Nazwisko'),
             ),
           ),
           Padding(
@@ -134,7 +134,7 @@ class _SignUpFormState extends State<SignUpForm> {
             padding: EdgeInsets.all(8.0),
             child: TextFormField(
               controller: _passwordTextController,
-              decoration: InputDecoration(hintText: 'Password'),
+              decoration: InputDecoration(hintText: 'Hasło'),
               obscureText: true,
             ),
           ),
@@ -158,7 +158,7 @@ class _SignUpFormState extends State<SignUpForm> {
                     }),
                   ),
                   onPressed: () => {signUp()},
-                  child: Text('Sign up'),
+                  child: Text('Zarejestruj'),
                 ),
               ),
               Padding(
@@ -182,7 +182,7 @@ class _SignUpFormState extends State<SignUpForm> {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => SignInScreen()))
                   },
-                  child: Text('Go to Sign in'),
+                  child: Text('Zaloguj się'),
                 ),
               )
             ],

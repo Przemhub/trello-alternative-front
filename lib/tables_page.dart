@@ -24,7 +24,7 @@ class _TablesPageState extends State<TablesPage> {
   List<List<String>> tableList = [
     ["random Table"]
   ];
-  List<String> teamList = ["private"];
+  List<String> teamList = ["prywatna"];
   void initLists() {
     tableList = widget.user.tables;
     teamList = widget.user.teams;
@@ -42,7 +42,7 @@ class _TablesPageState extends State<TablesPage> {
   // }
 
   getListsByTable(String boardID) async {
-    print(boardID);
+    print("board $boardID");
     print("$SERVER_IP/board/" + boardID);
     var res = await http.get("$SERVER_IP/board/" + boardID, headers: {
       HttpHeaders.authorizationHeader: "Bearer " + widget.user.token
@@ -52,23 +52,43 @@ class _TablesPageState extends State<TablesPage> {
       print("Error");
     } else {
       var jsonResponse = json.decode(res.body);
-
+      bool firstMember = true;
+      for (var member in jsonResponse["board"]["members"]) {
+        if (firstMember == true) {
+          user.name = member["name"];
+          firstMember = false;
+        }
+        table.members.add(member["email"]);
+      }
       // print("response $jsonResponse");
+
       for (var list in jsonResponse["board"]["lists"]) {
         print("list $list");
         TrelloList tempList = new TrelloList(list["name"]);
         tempList.id = list["_id"];
-        table.lists.add(tempList);
         for (var card in list["cards"]) {
           TrelloCard tempCard = new TrelloCard(card["name"]);
-          tempCard.id = card["id"];
-          table.lists[table.lists.indexOf(tempList)].cards.add(tempCard);
+          tempCard.id = card["_id"];
+          tempCard.parentName = tempList.name;
+          tempCard.description = card["description"];
+          if (card["deadline"] != null) {
+            tempCard.deadline = card["deadline"].toString().substring(0, 10) +
+                " " +
+                card["deadline"].toString().substring(11, 16);
+          }
+          if (card["isArchived"])
+            table.archivedCards.add(tempCard);
+          else
+            tempList.cards.add(tempCard);
         }
-
-        // lists["team"] == null means table is private
-
+        if (list["isArchived"])
+          table.archivedLists.add(tempList);
+        else
+          table.lists.add(tempList);
       }
     }
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => HomePage(table, user)));
   }
 
   renameTable(String boardID, String name) async {
@@ -88,7 +108,7 @@ class _TablesPageState extends State<TablesPage> {
   Future<String> postTable(String userId, String name, String team) async {
     var res = await http.post(
       "$SERVER_IP/boards/create",
-      headers: {HttpHeaders.authorizationHeader: userId},
+      headers: {HttpHeaders.authorizationHeader: "Bearer " + userId},
       body: {
         'name': name,
         'team': team,
@@ -97,7 +117,7 @@ class _TablesPageState extends State<TablesPage> {
       },
     );
     user.tableToID[name] = res.body;
-    print(name);
+    print(res.statusCode);
     print(res.body);
     if (res.statusCode == 200) return res.body;
     return null;
@@ -175,6 +195,7 @@ class _TablesPageState extends State<TablesPage> {
         children: [
           Text(
             tableName,
+            maxLines: 1,
             style: TextStyle(
               fontSize: 15.0,
               fontWeight: FontWeight.bold,
@@ -213,10 +234,6 @@ class _TablesPageState extends State<TablesPage> {
                       table = new TrelloTable(
                           tableName, widget.user.tableToID[tableName]);
                       getListsByTable(widget.user.tableToID[tableName]);
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => HomePage(table, user)));
                     },
                     child: Container(
                       decoration: BoxDecoration(

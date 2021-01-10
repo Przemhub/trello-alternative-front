@@ -74,8 +74,7 @@ class _SignInFormState extends State<SignInForm> {
                     )));
       }
     } else {
-      displayDialog(context, "An Error Occurred",
-          "No account was found matching that Email and password");
+      displayDialog(context, "Błąd", "Email lub Hasło nie jest poprawne");
     }
   }
 
@@ -84,27 +83,29 @@ class _SignInFormState extends State<SignInForm> {
         headers: {HttpHeaders.authorizationHeader: "Bearer " + userId});
 
     if (res.statusCode != 200) {
-      displayDialog(context, "An Error Occurred",
-          "No account was found matching that Email");
+      displayDialog(context, "Błąd", "Email lub Hasło nie jest poprawne");
     } else {
       var jsonResponse = json.decode(res.body);
       print(jsonResponse);
+      user.name = jsonResponse["name"];
       for (var table in jsonResponse["boards"]) {
         //table["team"] == null means table is private
         if (table["team"] != null) {
-          int index = user.teams.indexOf(table["team"]);
+          print(table["team"]);
+          var team = table["team"];
+          int index = user.teams.indexOf(team["name"]);
           //if team exists, insert table to a specific nested list, else add new team
           if (index != -1) {
             user.tables[index].add(table["name"]);
-            user.tableToID[table["name"]] = table["id"];
+            user.tableToID[table["name"]] = table["_id"];
           } else {
-            user.teams.add(table["team"]);
+            user.teams.add(team["name"]);
             user.tables.add([table["name"]]);
-            user.tableToID[table["name"]] = table["id"];
+            user.tableToID[table["name"]] = table["_id"];
           }
         } else {
           user.tables[0].add(table["name"]);
-          user.tableToID[table["name"]] = table["id"];
+          user.tableToID[table["name"]] = table["_id"];
         }
       }
     }
@@ -139,7 +140,7 @@ class _SignInFormState extends State<SignInForm> {
         mainAxisSize: MainAxisSize.min,
         children: [
           AnimatedProgressIndicator(value: _formProgress),
-          Text('Sign in', style: Theme.of(context).textTheme.headline4),
+          Text('Logowanie', style: Theme.of(context).textTheme.headline4),
           Padding(
             padding: EdgeInsets.all(8.0),
             child: TextFormField(
@@ -151,7 +152,7 @@ class _SignInFormState extends State<SignInForm> {
             padding: EdgeInsets.all(8.0),
             child: TextFormField(
               controller: _passwordTextController,
-              decoration: InputDecoration(hintText: 'Password'),
+              decoration: InputDecoration(hintText: 'Hasło'),
               obscureText: true,
             ),
           ),
@@ -177,11 +178,19 @@ class _SignInFormState extends State<SignInForm> {
                   onPressed: () {
                     signIn();
                   },
-                  child: Text('Sign in'),
+                  child: Text('Zaloguj'),
                 ),
               ),
+              TextButton(
+                onPressed: () {
+                  _emailTextController.text = "kacpri7@gmail.com";
+                  _passwordTextController.text = "123456789";
+                },
+                child: Text('Kontynuuj'),
+              ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(70.0, 0.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsets.fromLTRB(20.0 /*70.0*/, 0.0, 0.0, 0.0),
                 child: TextButton(
                   style: ButtonStyle(
                     foregroundColor: MaterialStateColor.resolveWith(
@@ -203,7 +212,7 @@ class _SignInFormState extends State<SignInForm> {
                         MaterialPageRoute(
                             builder: (context) => SignUpScreen()));
                   },
-                  child: Text('Go to Sign up'),
+                  child: Text('Zarejestruj się'),
                 ),
               )
             ],

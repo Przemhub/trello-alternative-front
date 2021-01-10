@@ -2,6 +2,7 @@ import 'dart:collection';
 
 class User {
   String token;
+  String name;
   List<String> teams = ["private"];
   List<List<String>> tables = [[]];
   List<List<String>> teamMembers = [[]];
